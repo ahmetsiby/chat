@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="chat-container">
+        <h1>Bienvenue, <%= username %> !</h1>
+        <form action="" id="chat-form">
+          <input
+            type="text"
+            id="message-input"
+            autocomplete="off"
+            placeholder="Tapez votre message ici"
+          />
+          <button type="submit">Envoyer</button>
+        </form>
+      </div>
+      <div id="messages"></div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module">
+      var socket = io();
+      //Envoyer un message
+      document.getElementById("chat-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        var input = document.getElementById("message-input");
+        var username = `<%= username %>:`;
+        var message = username.toLocaleUpperCase() + "  " + input.value;
+        socket.emit("chat message", message);
+        input.value = "";
+      });
+      //Recevoir un message
+      socket.on("chat message", (msg) => {
+        var messages = document.getElementById("messages");
+        var messageElement = document.createElement("div");
+        messageElement.textContent = msg;
+        messages.appendChild(messageElement);
+      });
+    </script>
+  </body>
+</html>

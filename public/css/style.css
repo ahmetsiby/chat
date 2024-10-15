@@ -1,0 +1,88 @@
+/* public/css/style.css */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.container {
+  display: grid;
+  grid: "c m" 1fr / 1fr 1fr;
+  gap: 5px;
+  padding: 0 5px;
+}
+.login-container,
+.chat-container {
+  grid-area: c;
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.chat-container {
+  max-height: 200px;
+  max-width: 300px;
+  align-self: center;
+}
+
+h1 {
+  text-align: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+input {
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 5px;
+}
+
+button {
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#messages {
+  grid-area: m;
+  padding: 10px 5px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  max-height: 800px;
+  max-width: 500px;
+  overflow: auto;
+}
+
+#messages div {
+  padding: 10px;
+  margin: 5px 0;
+  border-bottom: 1px solid #ddd;
+  background-color: white;
+  border-radius: 5px;
+}
+
+@media screen and (max-width: 800px) {
+  .container {
+    grid: "c" 300px "m" 1fr/ 1fr;
+    padding: 10px;
+    gap: 0;
+  }
+  .chat-container {
+    justify-self: center;
+    max-height: 200px;
+  }
+  #messages {
+    max-height: 60vh;
+  }
+}
