@@ -1,3 +1,4 @@
+Attention: This file is used by the `npm run build` command to ignore files that should not be included in the final build.
 config/
 node_modules
 .env
