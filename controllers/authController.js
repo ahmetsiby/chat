@@ -75,3 +75,17 @@ exports.register = async (req, res) => {
     res.render("register", { error: "Erreur lors de l'inscription." });
   }
 };
+exports.logout = async (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.log("Erreur lors de la destruction de la session");
+      return res.redirect("/chat");
+    } else {
+      res.redirect("/");
+    }
+  });
+};
+
+exports.showRemovePage = (req, res) => {
+  return res.render("remove");
+};

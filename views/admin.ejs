@@ -9,26 +9,63 @@
   </head>
   <body>
     <div class="admin-container">
-      <h1>Liste des utilisateurs en attente d'approbation</h1>
-
-      <ul>
-        <% if (users.length > 0) { %> <% users.forEach(function(user) { %>
-        <li>
-          <%= user.username %>
-          <form
-            action="/admin/approve/<%= user.id %>"
-            method="POST"
-            style="display: inline"
-          >
-            <button type="submit">Approuver</button>
-          </form>
-        </li>
-        <% }) %> <% } else { %>
-        <p>Aucun utilisateur en attente.</p>
-        <% } %>
-      </ul>
-
-      <a href="/chat">Retour au chat</a>
+      <div class="listes_user">
+        <h2>Listes des Utilisateurs</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Nom d'utilisateur</th>
+              <th>Rôle</th>
+              <th>Action</th>
+              <th>Réinitialiation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (Allusers.length > 0) { %> <% Allusers.forEach(function(user)
+            { %>
+            <tr class="<%= user.role %>">
+              <td><%= user.username %></td>
+              <td><%= user.role %></td>
+              <td>
+                <% if (user.is_approved === false) { %>
+                <form
+                  action="/admin/approve/<%= user.id %>"
+                  method="POST"
+                  style="display: inline"
+                >
+                  <button type="submit">Approuver</button>
+                </form>
+                <% } else { %>
+                <form
+                  action="/admin/delete/<%= user.id %>"
+                  method="POST"
+                  style="display: inline"
+                >
+                  <button type="submit" class="warning">Supprimer</button>
+                </form>
+                <% } %>
+              </td>
+              <td>
+                <%if(user.is_approved === true) {%>
+                <form
+                  action="/admin/remove/<%= user.id %>"
+                  method="post"
+                  style="display: inline"
+                >
+                  <button type="submit" class="Info">PassWord</button>
+                </form>
+                <% } %>
+              </td>
+            </tr>
+            <% }) %> <% } else { %>
+            <tr>
+              <td colspan="4">Aucune personne inscrite.</td>
+            </tr>
+            <% } %>
+          </tbody>
+        </table>
+        <a href="/chat" class="lien_retour">Retour au chat</a>
+      </div>
     </div>
   </body>
 </html>

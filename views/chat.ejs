@@ -3,13 +3,52 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <title>Chat</title>
     <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
-    <div class="container">
-      <div class="chat-container">
-        <h1>Bienvenue, <%= username %> !</h1>
+    <div class="modal" id="modal">
+      <div class="modal_content">
+        <p>Vous n'avez pas le droit au click droit</p>
+      </div>
+    </div>
+    <div class="chat_container">
+      <div class="droite" id="droite">
+        <div class="user">
+          <div class="titre">
+            <i class="fa-regular fa-bell"><span class="notif"></span></i>
+            <h1>
+              <img src="/images/avatar.jpeg" alt=" <%= username %>" />
+              <%= username %>
+            </h1>
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+          </div>
+          <% if (role === 'admin') { %>
+          <form action="/admin" method="get" class="btn_admin">
+            <button type="submit">
+              <i class="fa-solid fa-gear"></i><span>Admin</span>
+            </button>
+          </form>
+          <% } %>
+          <form action="/logout" method="post" class="btn_user">
+            <button type="submit">
+              <i class="fa-solid fa-circle-user"></i><span>Déconnexion</span>
+            </button>
+          </form>
+        </div>
+        <div class="connected-users">
+          <ul id="connected-user-list"></ul>
+        </div>
+        <div class="non-connected-users">
+          <ul id="non-connected-user-list"></ul>
+        </div>
+      </div>
+      <div class="gauche" id="zone_de_chat">
+        <div id="messages"></div>
         <form action="" id="chat-form">
           <input
             type="text"
@@ -17,30 +56,255 @@
             autocomplete="off"
             placeholder="Tapez votre message ici"
           />
-          <button type="submit">Envoyer</button>
+          <button type="submit">&#9654;</button>
+        </form>
+        <form id="file-form">
+          <input type="file" id="file-input" />
+          <i class="fa-solid fa-paperclip" id="upload-icon"></i>
         </form>
       </div>
-      <div id="messages"></div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script type="module">
-      var socket = io();
-      //Envoyer un message
+      const socket = io();
+      const username = "<%= username %>";
+      let isActive = document.visibilityState === "visible";
+      let unreadMessages = 0;
+
+      socket.emit("user connected", username, isActive);
+
+      document.addEventListener("visibilitychange", () => {
+        isActive = document.visibilityState === "visible";
+        socket.emit("user activity", isActive);
+
+        if (isActive) {
+          unreadMessages = 0;
+          afficherMessageNonLu();
+        }
+      });
+
       document.getElementById("chat-form").addEventListener("submit", (e) => {
         e.preventDefault();
-        var input = document.getElementById("message-input");
-        var username = `<%= username %>:`;
-        var message = username.toLocaleUpperCase() + "  " + input.value;
-        socket.emit("chat message", message);
-        input.value = "";
+        const input = document.getElementById("message-input");
+        const message = `${username.toUpperCase()}: ${input.value.trim()}`;
+
+        if (input.value.trim()) {
+          socket.emit("chat message", message);
+          input.value = "";
+        }
       });
-      //Recevoir un message
+
+      document.getElementById("upload-icon").addEventListener("click", () => {
+        document.getElementById("file-input").click();
+      });
+      document.getElementById("file-input").addEventListener("change", (e) => {
+        const files = e.target.files;
+        if (files.length === 0) {
+          console.log("Aucun fichier sélectionné.");
+          return;
+        }
+
+        [...files].forEach((file) => {
+          if (file.size > 10 * 1024 * 1024) {
+            alert("Fichier trop volumineux");
+            return;
+          }
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const fileData = reader.result;
+
+            // Envoyer le fichier au serveur via socket
+            socket.emit("file-upload", {
+              fileName: file.name,
+              fileType: file.type,
+              fileData: fileData,
+            });
+
+            // Afficher le fichier localement dans la liste des fichiers
+            displayFile(file.name, fileData);
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+
+      const avatar = createAvatar("/images/avatar.jpeg");
+
       socket.on("chat message", (msg) => {
-        var messages = document.getElementById("messages");
-        var messageElement = document.createElement("div");
-        messageElement.textContent = msg;
-        messages.appendChild(messageElement);
+        const [userName, ...messageParts] = msg.split(":");
+        const message = messageParts.join(":").trim();
+        displayMessage(userName, message);
+
+        if (!isActive) {
+          unreadMessages++;
+          afficherMessageNonLu();
+        }
       });
+
+      socket.on("userList", (userList) => {
+        updateUserLists(userList);
+      });
+
+      function displayFile(fileName, fileData) {
+        const messages = document.getElementById("messages");
+        const li = document.createElement("li");
+        li.classList.add("file");
+        const link = document.createElement("a");
+        link.href = fileData;
+        link.download = fileName;
+        link.textContent = fileName;
+        li.appendChild(link);
+        messages.appendChild(li);
+      }
+
+      socket.on("file-shared", (data) =>
+        displayFile(data.fileName, data.fileData)
+      );
+
+      const modal = document.querySelector(".modal");
+      document
+        .getElementById("messages")
+        .addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          modal.style.display = "flex";
+        });
+      document.addEventListener("click", (e) => {
+        if (e.target === modal) modal.style.display = "none";
+      });
+
+      document.getElementById("droite").addEventListener("click", (e) => {
+        if (window.innerWidth < 768) {
+          e.preventDefault();
+          e.stopPropagation();
+          document.getElementById("droite").classList.toggle("collapsed");
+        }
+      });
+
+      const btns = document.querySelector(".fa-ellipsis-vertical");
+      btns.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleUserOptions();
+      });
+
+      function toggleUserOptions() {
+        document.querySelectorAll(".btn_user, .btn_admin").forEach((btn) => {
+          if (btn) btn.classList.toggle("show");
+        });
+      }
+
+      if ("serviceWorker" in navigator && "PushManager" in window) {
+        navigator.serviceWorker
+          .register("/service-worker.js")
+          .then((registration) => {
+            Notification.requestPermission().then((result) => {
+              if (result === "granted") subscribeUserToPush(registration);
+            });
+          })
+          .catch((error) =>
+            console.error(
+              "Erreur lors de l'enregistrement du Service Worker:",
+              error
+            )
+          );
+      }
+
+      function subscribeUserToPush(registration) {
+        registration.pushManager.getSubscription().then((subscription) => {
+          if (subscription) {
+            subscription.unsubscribe().then(() => subscribe(registration));
+          } else {
+            subscribe(registration);
+          }
+        });
+      }
+
+      function subscribe(registration) {
+        const applicationServerKey = urlBase64ToUint8Array(
+          "<%= PUBLIC_VAPID_KEY %>"
+        );
+        registration.pushManager
+          .subscribe({ userVisibleOnly: true, applicationServerKey })
+          .then((subscription) => {
+            fetch("/subscribe", {
+              method: "POST",
+              body: JSON.stringify({ subscription, username }),
+              headers: { "content-type": "application/json" },
+            });
+          });
+      }
+
+      function urlBase64ToUint8Array(base64String) {
+        const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+        const base64 = (base64String + padding)
+          .replace(/-/g, "+")
+          .replace(/_/g, "/");
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; i++) {
+          outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+      }
+
+      function afficherMessageNonLu() {
+        const notif = document.querySelector(".notif");
+        notif.style.display = unreadMessages > 0 ? "block" : "none";
+        notif.textContent = unreadMessages;
+      }
+
+      function createAvatar(src) {
+        const avatar = document.createElement("img");
+        avatar.src = src;
+        avatar.classList.add("avatar");
+        avatar.style.width = "30px";
+        avatar.style.height = "30px";
+        avatar.style.borderRadius = "50%";
+        return avatar;
+      }
+
+      function displayMessage(userName, message) {
+        const messages = document.getElementById("messages");
+        const messageElement = document.createElement("div");
+        messageElement.textContent = message;
+        messageElement.classList.add("message");
+
+        const userSpan = document.createElement("span");
+        userSpan.textContent = userName[0].toUpperCase();
+        userSpan.appendChild(createAvatar("/images/avatar.jpeg"));
+        if (userName.toUpperCase() === username.toUpperCase()) {
+          userSpan.classList.add("present");
+        }
+
+        messages.append(userSpan, messageElement);
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      function updateUserLists(userList) {
+        const connectedUserList = document.getElementById(
+          "connected-user-list"
+        );
+        const nonConnectedUserList = document.getElementById(
+          "non-connected-user-list"
+        );
+
+        connectedUserList.innerHTML = "";
+        userList.connected.forEach((user) => {
+          if (user !== username) {
+            const li = document.createElement("li");
+            li.textContent = user;
+            li.prepend(createAvatar("/images/avatar.jpeg"));
+            connectedUserList.appendChild(li);
+          }
+        });
+
+        nonConnectedUserList.innerHTML = "";
+        userList.nonConnected.forEach((user) => {
+          const li = document.createElement("li");
+          li.textContent = user;
+          li.prepend(createAvatar("/images/avatar.jpeg"));
+          nonConnectedUserList.appendChild(li);
+        });
+      }
     </script>
   </body>
 </html>

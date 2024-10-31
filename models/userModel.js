@@ -30,3 +30,16 @@ exports.getPendingUsers = async () => {
   );
   return result.rows;
 };
+//recupere tous les users
+exports.getAllUser = async () => {
+  const result = await pool.query("SELECT * FROM users");
+  return result.rows;
+};
+
+//Supprimer un utilisateur
+
+exports.deleteUser = async (userId) => {
+  const Id = parseInt(userId.id);
+  await pool.query("DELETE FROM users WHERE id = $1", [Id]);
+  return "User supprimer";
+};

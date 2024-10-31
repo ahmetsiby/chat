@@ -4,8 +4,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
     <title>Connexion</title>
     <link rel="stylesheet" href="/css/style.css" />
+    <link rel="manifest" href="/manifest.json" />
   </head>
   <body>
     <div class="login-container">
@@ -27,6 +29,28 @@
         <button type="submit">Se connecter</button>
       </form>
       <p>Pas encore inscrit ? <a href="/register">S'inscrire ici</a></p>
+      <a href="/remove">Mot de passe oublié</a>
     </div>
+    <script>
+      /*PWA service worker*/
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/service-worker.js")
+            .then((registration) => {
+              console.log(
+                "Service Worker enregistré avec succès:",
+                registration
+              );
+            })
+            .catch((error) => {
+              console.log(
+                "Erreur lors de l'enregistrement du Service Worker:",
+                error
+              );
+            });
+        });
+      }
+    </script>
   </body>
 </html>
