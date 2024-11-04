@@ -66,14 +66,25 @@ app.post("/admin/remove/:id", adminController.removeUser);
 
 // Gestion des utilisateurs connectés
 const connectedUsers = {};
-
+let subscriptions = []; //tableau pour stocker les abonnements
 // WebSocket (Socket.io)
 io.on("connection", async (socket) => {
   // Utilisateur rejoint le chat
   socket.on("user connected", async (username, isActive) => {
-    connectedUsers[socket.id] = { username, isActive };
-    const userList = await getSeparateUsers();
-    io.emit("userList", userList);
+    //vérifier si l'utilisateur est deja connecter
+    const existingUser = Object.values(connectedUsers).find(
+      (user) => user.username === username
+    );
+    if (existingUser) {
+      //Envoyer un message d'erreur à l'utilisateur
+      socket.emit("error", "Vous êtes déjà connecté");
+      socket.disconnect();
+    } else {
+      //Enregistrer la nouvelle connexion
+      connectedUsers[socket.id] = { username, isActive };
+      const userList = await getSeparateUsers();
+      io.emit("userList", userList);
+    }
   });
 
   // Mise à jour de l'état d'activité
@@ -85,7 +96,7 @@ io.on("connection", async (socket) => {
 
   // Réception des fichiers partagés
   socket.on("file-upload", (data) => {
-    console.log(`Fichier reçu : ${data.fileName}`);
+    console.log(`Fichier reçu : ${data.username} - ${data.fileName}`);
     socket.broadcast.emit("file-shared", data);
     envoyerNotificationAuxInactifs("Nouveau fichier partagé", data.fileName);
   });

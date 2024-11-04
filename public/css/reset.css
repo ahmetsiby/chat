@@ -146,37 +146,6 @@ table {
   --telegram-received-bg: #ffffff;
   --telegram-shadow: rgba(0, 0, 0, 0.1);
 }
-/*CSS GLOBALE A TOUTES LES PAGES*/
-body {
-  font-family: "Roboto", sans-serif;
-  background-color: var(--telegram-light-bg);
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-}
-body::marker {
-  color: #006699;
-}
-button {
-  padding: 12px;
-  background-color: var(--telegram-blue);
-  color: var(--telegram-white);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 5px 15px;
-}
-
-button:hover {
-  background-color: #006699;
-}
 a {
   text-decoration: none;
 }

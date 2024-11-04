@@ -8,14 +8,17 @@ exports.showLoginPage = (req, res) => {
   if (Session.getSessionUser(req)) {
     return res.redirect("/chat");
   }
-  res.render("login", { error: null });
+  res.render("login", { error: null, cssFile: "/css/login.css" });
 };
 
 // Gérer la connexion
 exports.login = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.render("login", { error: "Entrées non valides." });
+    return res.render("login", {
+      error: "Entrées non valides.",
+      cssFile: "/css/login.css",
+    });
   }
 
   const { username, password } = req.body;
@@ -23,38 +26,51 @@ exports.login = async (req, res) => {
   try {
     const user = await User.findByUsername(username);
     if (!user) {
-      return res.render("login", { error: "Utilisateur non trouvé." });
+      return res.render("login", {
+        error: "Utilisateur non trouvé.",
+        cssFile: "/css/login.css",
+      });
     }
 
     if (!user.is_approved) {
       return res.render("login", {
         error: "Votre compte n'a pas encore été approuvé.",
+        cssFile: "/css/login.css",
       });
     }
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
-      return res.render("login", { error: "Mot de passe incorrect." });
+      return res.render("login", {
+        error: "Mot de passe incorrect.",
+        cssFile: "/css/login.css",
+      });
     }
 
     Session.setSessionUser(req, user);
     res.redirect("/chat");
   } catch (error) {
     console.error(error);
-    res.render("login", { error: "Erreur interne." });
+    res.render("login", {
+      error: "Erreur interne.",
+      cssFile: "/css/login.css",
+    });
   }
 };
 
 // Afficher la page d'inscription
 exports.showRegisterPage = (req, res) => {
-  res.render("register", { error: null });
+  res.render("register", { error: null, cssFile: "/css/login.css" });
 };
 
 // Gérer l'inscription
 exports.register = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.render("register", { error: "Entrées non valides." });
+    return res.render("register", {
+      error: "Entrées non valides.",
+      cssFile: "/css/login.css",
+    });
   }
 
   const { username, password } = req.body;
@@ -64,6 +80,7 @@ exports.register = async (req, res) => {
     if (user) {
       return res.render("register", {
         error: "Le nom d'utilisateur existe déjà.",
+        cssFile: "/css/login.css",
       });
     }
 
@@ -72,7 +89,10 @@ exports.register = async (req, res) => {
     res.redirect("/");
   } catch (error) {
     console.error(error);
-    res.render("register", { error: "Erreur lors de l'inscription." });
+    res.render("register", {
+      error: "Erreur lors de l'inscription.",
+      cssFile: "/css/login.css",
+    });
   }
 };
 exports.logout = async (req, res) => {
@@ -87,5 +107,5 @@ exports.logout = async (req, res) => {
 };
 
 exports.showRemovePage = (req, res) => {
-  return res.render("remove");
+  return res.render("remove", { cssFile: "/css/login.css" });
 };

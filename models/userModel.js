@@ -36,10 +36,13 @@ exports.getAllUser = async () => {
   return result.rows;
 };
 
-//Supprimer un utilisateur
-
+// Supprimer un utilisateur
+// Supprimer un utilisateur
 exports.deleteUser = async (userId) => {
-  const Id = parseInt(userId.id);
+  const Id = parseInt(userId, 10);
+  if (isNaN(Id)) {
+    throw new Error("Invalid user ID");
+  }
   await pool.query("DELETE FROM users WHERE id = $1", [Id]);
-  return "User supprimer";
+  return "User supprimé";
 };

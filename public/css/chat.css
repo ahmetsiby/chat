@@ -1,0 +1,468 @@
+/*le modal*/
+.modal {
+  display: none;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background-color: transparent;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  z-index: 999;
+  cursor: pointer;
+}
+.modal_content {
+  width: 50%;
+  height: 50%;
+  background-color: black;
+  color: var(--telegram-blue);
+  border-radius: 50px;
+  box-shadow: 0 4px 12px var(--telegram-shadow);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("/images/doight.webp");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  color: var(--telegram-light-grey);
+  font-size: 2rem;
+  text-align: center;
+  font-weight: bold;
+}
+/*container du chat*/
+.chat_container {
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 300px 1fr; /* Sidebar + Chat principal */
+  background-color: #1c1c1c;
+  gap: 100px;
+}
+/*doite*/
+
+.droite {
+  position: relative;
+  box-shadow: 2px 0 5px var(--telegram-shadow);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.5s ease; /* Pour l'animation de glissement */
+}
+
+.droite.collapsed {
+  padding: 0;
+  left: 0;
+}
+
+.droite::after {
+  content: "";
+  position: absolute;
+  top: 10px; /* Positionné juste en dessous du bord supérieur */
+  right: -35px; /* La flèche dépasse à droite */
+  border-width: 20px; /* Taille de la flèche */
+  border-style: solid;
+  border-color: transparent transparent transparent #cc4100;
+  cursor: pointer;
+  display: block; /* Assurez-vous que la flèche est visible */
+  transition: transform 0.5s ease; /* Animation fluide lors de la transformation */
+  display: none;
+}
+
+.droite.collapsed::after {
+  /* Faire tourner la flèche pour montrer qu'elle peut ouvrir la barre */
+  transform: rotate(180deg);
+  right: 0;
+}
+.titre {
+  text-align: center;
+  color: var(--telegram-blue);
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+h1 {
+  text-align: center;
+  color: var(--telegram-blue);
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+h1 > img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 15px;
+  object-fit: cover;
+}
+.fa-bell {
+  font-size: 30px;
+  cursor: pointer;
+  position: relative;
+}
+.fa-bell > span {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #c531317a;
+  color: var(--telegram-white);
+  border-radius: 50%;
+  padding: 5px;
+  font-size: 12px;
+}
+.fa-bell:hover {
+  color: #c53131;
+}
+.fa-bell:hover > span {
+  background-color: #c53131;
+}
+.fa-ellipsis-vertical {
+  cursor: pointer;
+  font-size: 20px;
+  width: 30px;
+  height: 30px;
+}
+.user {
+  position: relative;
+  padding-top: 20px;
+}
+.fa-circle-user {
+  font-size: 20px;
+  cursor: pointer;
+}
+.btn_user {
+  position: absolute;
+  top: 0;
+  left: -255px;
+  width: 170px;
+  transition: left 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+.fa-gear {
+  font-size: 20px;
+  cursor: pointer;
+}
+.btn_admin {
+  position: absolute;
+  top: 49px;
+  left: 27px;
+  left: -255px;
+  width: 170px;
+  transition: left 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+.show {
+  left: 300px;
+  z-index: 1;
+}
+.show > button {
+  display: flex;
+  justify-content: flex-start;
+}
+.show > button > span {
+  color: #e0e0e0;
+}
+.search-bar {
+  margin-bottom: 15px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--telegram-grey);
+  border-radius: 20px;
+  outline: none;
+  transition: border 0.3s;
+}
+
+.connected-users ul li {
+  cursor: pointer;
+  color: #e0eaf0;
+}
+.connected-users ul li,
+.non-connected-users ul li {
+  padding: 1rem 0 1rem 1rem;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+}
+.connected-users > ul li:hover {
+  background-color: #e0eaf0;
+  transform: translateY(-2px);
+}
+
+.connected-users > ul li img,
+.non-connected-users > ul li img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+.non-connected-users > ul li img {
+  filter: grayscale(100%);
+}
+
+.non-connected-users > ul li {
+  color: var(--telegram-grey);
+  cursor: not-allowed;
+}
+
+.non-connected-users > ul li:hover {
+  background-color: var(--telegram-light-grey);
+}
+
+/*gauche*/
+.gauche {
+  display: flex;
+  flex-direction: column;
+  max-height: 100vh;
+  overflow-y: scroll;
+  position: relative;
+}
+
+.header-chat {
+  padding: 15px 20px;
+  background-color: var(--telegram-blue);
+  color: var(--telegram-white);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--telegram-grey);
+}
+
+.header-chat img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 15px;
+  object-fit: cover;
+}
+
+.header-chat .chat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-chat .chat-info .chat-name {
+  font-weight: 500;
+}
+
+.header-chat .chat-info .last-seen {
+  color: var(--telegram-light-grey);
+}
+
+#messages {
+  flex: 1;
+  padding: 20px;
+  background-color: #0e0e0d;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='219' height='219' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%23444342' stroke-width='1.2'%3E%3Cpath d='M769 229L1037 260.9M927 880L731 737 520 660 309 538 40 599 295 764 126.5 879.5 40 599-197 493 102 382-31 229 126.5 79.5-69-63'/%3E%3Cpath d='M-31 229L237 261 390 382 603 493 308.5 537.5 101.5 381.5M370 905L295 764'/%3E%3Cpath d='M520 660L578 842 731 737 840 599 603 493 520 660 295 764 309 538 390 382 539 269 769 229 577.5 41.5 370 105 295 -36 126.5 79.5 237 261 102 382 40 599 -69 737 127 880'/%3E%3Cpath d='M520-140L578.5 42.5 731-63M603 493L539 269 237 261 370 105M902 382L539 269M390 382L102 382'/%3E%3Cpath d='M-222 42L126.5 79.5 370 105 539 269 577.5 41.5 927 80 769 229 902 382 603 493 731 737M295-36L577.5 41.5M578 842L295 764M40-201L127 80M102 382L-261 269'/%3E%3C/g%3E%3Cg fill='%2355534E'%3E%3Ccircle cx='769' cy='229' r='6'/%3E%3Ccircle cx='539' cy='269' r='6'/%3E%3Ccircle cx='603' cy='493' r='6'/%3E%3Ccircle cx='731' cy='737' r='6'/%3E%3Ccircle cx='520' cy='660' r='6'/%3E%3Ccircle cx='309' cy='538' r='6'/%3E%3Ccircle cx='295' cy='764' r='6'/%3E%3Ccircle cx='40' cy='599' r='6'/%3E%3Ccircle cx='102' cy='382' r='6'/%3E%3Ccircle cx='127' cy='80' r='6'/%3E%3Ccircle cx='370' cy='105' r='6'/%3E%3Ccircle cx='578' cy='42' r='6'/%3E%3Ccircle cx='237' cy='261' r='6'/%3E%3Ccircle cx='390' cy='382' r='6'/%3E%3C/g%3E%3C/svg%3E");
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  border-radius: 25px;
+  scrollbar-width: none;
+  margin: 15px 20px;
+  align-content: center;
+}
+
+.message {
+  max-width: 100%;
+  max-width: 600px;
+  padding: 5px 15px;
+  border-radius: 20px;
+  word-wrap: break-word;
+  display: inline-block;
+  line-height: 1.4;
+  background-color: #ffffff;
+  align-self: flex-end;
+}
+
+span {
+  position: relative;
+  color: var(--telegram-blue);
+  padding: 2px 5px;
+  border-radius: 25px;
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.present {
+  color: #cc0000;
+  padding: 2px 5px;
+  border-radius: 25px;
+  align-self: flex-start;
+}
+
+/* Trait fin pour les messages envoyés */
+
+/* Trait fin pour les messages reçus */
+
+.present + .message {
+  align-self: flex-start;
+  border: 1px solid var(--telegram-grey);
+  background-color: rgba(173, 240, 182, 0.836);
+}
+.message:hover {
+  box-shadow: 0 2px 8px var(--telegram-shadow);
+}
+
+#chat-form {
+  display: flex;
+  flex-direction: row;
+  padding: 15px 20px;
+  align-items: center;
+}
+.highlight {
+  background-color: #f0f4f8;
+}
+#message-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid var(--telegram-grey);
+  border-radius: 20px;
+  margin-right: 10px;
+  background-color: var(--telegram-light-grey);
+  transition: border 0.3s, box-shadow 0.3s;
+}
+
+#message-input:focus {
+  border-color: var(--telegram-blue);
+  outline: none;
+  box-shadow: 0 0 5px var(--telegram-blue);
+}
+
+#chat-form > button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin: 0 auto;
+  text-align: center;
+  padding-left: 15px;
+  padding-bottom: 15px;
+}
+
+#chat-form > button:hover {
+  background-color: #006699;
+  transform: scale(1.05);
+}
+/* Style zone drap and drop*/
+.fa-paperclip {
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--telegram-blue);
+  position: absolute;
+  bottom: 27px;
+  right: 100px;
+}
+input[type="file"] {
+  display: none;
+}
+.file {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  list-style-type: none;
+  background-color: var(--telegram-light-bg);
+  padding: 10px 5px;
+  border-radius: 5px;
+  box-shadow: 0 2px 8px var(--telegram-shadow);
+  margin: 10px;
+  text-align: start;
+  transition: all 0.3s ease-in-out;
+  gap: 10px;
+  align-self: flex-start;
+}
+
+.file span {
+  align-self: flex-start;
+}
+.recu span {
+  align-self: flex-end;
+}
+.file a {
+  text-decoration: none;
+  color: #006699;
+  font-weight: 500;
+  padding: 0 5px;
+}
+.file::marker {
+  content: "📎";
+  color: #006699;
+  font-size: 1.5rem;
+}
+.file:hover {
+  background-color: #f0f4f8;
+  transform: translateY(-2px);
+}
+
+/*Media query*/
+@media (max-width: 1024px) {
+  .chat_container {
+    grid-template-columns: 250px 1fr;
+  }
+  .show {
+    left: 250px;
+  }
+}
+@media (max-width: 768px) {
+  .chat_container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    gap: 0;
+  }
+  .show {
+    left: 192px;
+  }
+  .header-chat {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-chat img {
+    margin-bottom: 10px;
+  }
+  .droite {
+    position: absolute;
+    margin: 0;
+    padding: 0 20px;
+    height: 100%;
+    width: 200px;
+    left: -220px;
+    background-color: #1c1c1c;
+    transition: all 0.5s ease-in-out;
+
+    z-index: 99;
+  }
+  .droite::after {
+    display: block;
+    z-index: 99;
+  }
+  .droite_visible {
+    left: 0;
+  }
+  .droite_visible::after {
+    right: 0;
+    transform: rotate(90deg);
+  }
+}
+@media (max-width: 360px) {
+  .show {
+    left: 50px;
+    top: 100px;
+  }
+  .btn_admin {
+    top: 150px;
+  }
+  .btn_user {
+    top: 100px;
+  }
+}

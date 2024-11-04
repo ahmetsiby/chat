@@ -1,0 +1,98 @@
+/* Page Admin */
+body {
+  height: 100dvh;
+}
+.admin-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 90%;
+  min-width: 600px;
+  max-width: 900px;
+  background-color: var(--telegram-white);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--telegram-shadow);
+}
+
+.listes_user {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 8px var(--telegram-shadow);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+thead {
+  background-color: var(--telegram-blue);
+  color: var(--telegram-white);
+}
+
+th,
+td {
+  padding: 12px 20px;
+  text-align: left;
+}
+
+th {
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+tr {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+tr:hover {
+  background-color: #f1f1f1;
+}
+
+tr:last-child {
+  border-bottom: none;
+}
+
+td {
+  color: #333;
+}
+
+.warning {
+  background-color: #ffcccc;
+  color: #cc0000;
+}
+
+.Info {
+  background-color: #ccffcc;
+  color: #006600;
+}
+
+a {
+  text-decoration: none;
+}
+
+.lien_retour {
+  background-color: var(--telegram-blue);
+  color: var(--telegram-white);
+  border-radius: 6px;
+  padding: 10px 20px;
+  transition: background-color 0.3s;
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.lien_retour:hover {
+  background-color: #006699;
+}
+.admin {
+  border-color: #cc0000;
+}
+.user {
+  border-color: #999999;
+}

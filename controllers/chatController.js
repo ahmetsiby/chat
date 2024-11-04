@@ -10,5 +10,6 @@ exports.showChatPage = (req, res) => {
     username: user.username,
     role: user.role,
     PUBLIC_VAPID_KEY: process.env.PUBLIC_VAPID_KEY,
+    cssFile: "/css/chat.css",
   });
 };

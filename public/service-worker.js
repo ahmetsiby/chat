@@ -105,7 +105,7 @@ self.addEventListener("notificationclick", (event) => {
         // Vérifier si une fenêtre de chat est déjà ouverte
         for (const client of clientList) {
           if (
-            client.url.startsWith("http://localhost:4000/chat") &&
+            client.url.startsWith("https://localhost:4000/chat") &&
             "focus" in client
           ) {
             // Si la fenêtre existe déjà, vérifier si elle est visible

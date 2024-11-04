@@ -1,0 +1,854 @@
+/* public/css/style.css */
+/* Reset CSS */
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+  display: block;
+}
+
+body {
+  line-height: 1;
+}
+
+ol,
+ul {
+  list-style: none;
+}
+
+blockquote,
+q {
+  quotes: none;
+}
+
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+  content: "";
+  content: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+/* Importation de la police Roboto depuis Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
+
+/* Variables de Couleurs */
+:root {
+  --telegram-blue: #0088cc;
+  --telegram-light-bg: #e5ddd5;
+  --telegram-white: #ffffff;
+  --telegram-light-grey: #f0f0f0;
+  --telegram-grey: #cccccc;
+  --telegram-dark-grey: #999999;
+  --telegram-green: #dcf8c6;
+  --telegram-sent-bg: #dcf8c6;
+  --telegram-received-bg: #ffffff;
+  --telegram-shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* Général */
+body {
+  font-family: "Roboto", sans-serif;
+  background-color: var(--telegram-light-bg);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+body::marker {
+  color: #006699;
+}
+.container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  padding: 10px;
+}
+
+/* Conteneur de connexion */
+.login-container {
+  background-color: var(--telegram-white);
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--telegram-shadow);
+}
+.titre {
+  text-align: center;
+  color: var(--telegram-blue);
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+h1 {
+  text-align: center;
+  color: var(--telegram-blue);
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+h1 > img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 15px;
+  object-fit: cover;
+}
+.fa-bell {
+  font-size: 30px;
+  cursor: pointer;
+  position: relative;
+}
+.fa-bell > span {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #c531317a;
+  color: var(--telegram-white);
+  border-radius: 50%;
+  padding: 5px;
+  font-size: 12px;
+}
+.fa-bell:hover {
+  color: #c53131;
+}
+.fa-bell:hover > span {
+  background-color: #c53131;
+}
+.fa-ellipsis-vertical {
+  cursor: pointer;
+  font-size: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+input {
+  padding: 12px 15px;
+  border: 1px solid var(--telegram-grey);
+  border-radius: 6px;
+  transition: border 0.3s;
+}
+
+input:focus {
+  border-color: var(--telegram-blue);
+  outline: none;
+}
+
+button {
+  padding: 12px;
+  background-color: var(--telegram-blue);
+  color: var(--telegram-white);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 5px 15px;
+}
+
+button:hover {
+  background-color: #006699;
+}
+
+/* Page Admin */
+.admin-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 90%;
+  background-color: var(--telegram-white);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--telegram-shadow);
+}
+
+.listes_user {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 8px var(--telegram-shadow);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+thead {
+  background-color: var(--telegram-blue);
+  color: var(--telegram-white);
+}
+
+th,
+td {
+  padding: 12px 20px;
+  text-align: left;
+}
+
+th {
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+tr {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+tr:hover {
+  background-color: #f1f1f1;
+}
+
+tr:last-child {
+  border-bottom: none;
+}
+
+td {
+  color: #333;
+}
+
+.warning {
+  background-color: #ffcccc;
+  color: #cc0000;
+}
+
+.Info {
+  background-color: #ccffcc;
+  color: #006600;
+}
+
+a {
+  text-decoration: none;
+}
+
+.lien_retour {
+  background-color: var(--telegram-blue);
+  color: var(--telegram-white);
+  border-radius: 6px;
+  padding: 10px 20px;
+  transition: background-color 0.3s;
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.lien_retour:hover {
+  background-color: #006699;
+}
+
+/* Chat */
+.chat_container {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 300px 1fr; /* Sidebar + Chat principal */
+  background-color: #1c1c1c;
+  gap: 100px;
+}
+
+/* Sidebar (liste des utilisateurs) */
+.droite {
+  position: relative;
+  box-shadow: 2px 0 5px var(--telegram-shadow);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.5s ease; /* Pour l'animation de glissement */
+}
+
+.droite.collapsed {
+  padding: 0;
+  left: 0;
+}
+
+.droite::after {
+  content: "";
+  position: absolute;
+  top: 10px; /* Positionné juste en dessous du bord supérieur */
+  right: -35px; /* La flèche dépasse à droite */
+  border-width: 20px; /* Taille de la flèche */
+  border-style: solid;
+  border-color: transparent transparent transparent #cc4100;
+  cursor: pointer;
+  display: block; /* Assurez-vous que la flèche est visible */
+  transition: transform 0.5s ease; /* Animation fluide lors de la transformation */
+  display: none;
+}
+
+.droite.collapsed::after {
+  /* Faire tourner la flèche pour montrer qu'elle peut ouvrir la barre */
+  transform: rotate(180deg);
+  right: 0;
+}
+
+.droite > h1 {
+  text-align: center;
+  color: var(--telegram-blue);
+  margin-bottom: 20px;
+}
+.user {
+  position: relative;
+  padding-top: 20px;
+}
+.fa-circle-user {
+  font-size: 20px;
+  cursor: pointer;
+}
+.btn_user {
+  position: absolute;
+  top: 0;
+  left: -255px;
+  width: 170px;
+  transition: left 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.fa-gear {
+  font-size: 20px;
+  cursor: pointer;
+}
+.btn_admin {
+  position: absolute;
+  top: 49px;
+  left: 27px;
+  left: -255px;
+  width: 170px;
+  transition: left 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+.show {
+  left: 300px;
+}
+.show > button {
+  display: flex;
+  justify-content: flex-start;
+}
+.show > button > span {
+  color: #e0e0e0;
+}
+.search-bar {
+  margin-bottom: 15px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--telegram-grey);
+  border-radius: 20px;
+  outline: none;
+  transition: border 0.3s;
+}
+
+.search-bar {
+  margin-bottom: 15px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--telegram-grey);
+  border-radius: 20px;
+  outline: none;
+  transition: border 0.3s;
+}
+.admin {
+  border-color: #cc0000;
+}
+
+.connected-users > ul li:hover {
+  background-color: #e0eaf0;
+  transform: translateY(-2px);
+}
+
+.connected-users > ul li img,
+.non-connected-users > ul li img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+.non-connected-users > ul li img {
+  filter: grayscale(100%);
+}
+.connected-users > ul li .user-info,
+.non-connected-users > ul li .user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.connected-users > ul li .user-info .name {
+  font-weight: 500;
+  color: #333;
+}
+
+.connected-users > ul li .user-info .status {
+  color: var(--telegram-grey);
+}
+
+.non-connected-users > ul li {
+  color: var(--telegram-grey);
+  cursor: not-allowed;
+}
+
+.non-connected-users > ul li:hover {
+  background-color: var(--telegram-light-grey);
+}
+
+.non-connected-users > ul li .status {
+  color: var(--telegram-grey);
+}
+
+/* Chat principal */
+.gauche {
+  display: flex;
+  flex-direction: column;
+  max-height: 100vh;
+  overflow-y: scroll;
+  position: relative;
+}
+
+.header-chat {
+  padding: 15px 20px;
+  background-color: var(--telegram-blue);
+  color: var(--telegram-white);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--telegram-grey);
+}
+
+.header-chat img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 15px;
+  object-fit: cover;
+}
+
+.header-chat .chat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-chat .chat-info .chat-name {
+  font-weight: 500;
+}
+
+.header-chat .chat-info .last-seen {
+  color: var(--telegram-light-grey);
+}
+
+#messages {
+  flex: 1;
+  padding: 20px;
+  background-color: #ece5dd38;
+  background-image: radial-gradient(circle, #ff4500 1px, transparent 1px),
+    radial-gradient(circle, #32cd32 1px, transparent 1px),
+    radial-gradient(circle, #1e90ff 1px, transparent 1px),
+    radial-gradient(circle, #ffdd00 1px, transparent 1px),
+    radial-gradient(circle, #ff69b4 1px, transparent 1px),
+    radial-gradient(circle, #40e0d0 1px, transparent 1px);
+  background-size: 15px 15px;
+  background-blend-mode: overlay;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  border-radius: 25px;
+  scrollbar-width: none;
+  margin: 15px 20px;
+  align-content: center;
+}
+
+.message {
+  max-width: 60%;
+  padding: 5px 15px;
+  border-radius: 20px;
+  word-wrap: break-word;
+  display: inline-block;
+  line-height: 1.4;
+  background-color: #ffffff;
+  align-self: flex-end;
+}
+
+span {
+  position: relative;
+  color: var(--telegram-blue);
+  padding: 2px 5px;
+  border-radius: 25px;
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.present {
+  color: #cc0000;
+  padding: 2px 5px;
+  border-radius: 25px;
+  align-self: flex-start;
+}
+
+/* Trait fin pour les messages envoyés */
+
+/* Trait fin pour les messages reçus */
+
+.present + .message {
+  align-self: flex-start;
+  border: 1px solid var(--telegram-grey);
+  background-color: rgba(173, 240, 182, 0.836);
+}
+.message:hover {
+  box-shadow: 0 2px 8px var(--telegram-shadow);
+}
+
+#chat-form {
+  display: flex;
+  flex-direction: row;
+  padding: 15px 20px;
+  align-items: center;
+}
+.highlight {
+  background-color: #f0f4f8;
+}
+#message-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid var(--telegram-grey);
+  border-radius: 20px;
+  margin-right: 10px;
+  background-color: var(--telegram-light-grey);
+  transition: border 0.3s, box-shadow 0.3s;
+}
+
+#message-input:focus {
+  border-color: var(--telegram-blue);
+  outline: none;
+  box-shadow: 0 0 5px var(--telegram-blue);
+}
+
+#chat-form > button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin: 0 auto;
+  text-align: center;
+  padding-left: 15px;
+  padding-bottom: 15px;
+}
+
+#chat-form > button:hover {
+  background-color: #006699;
+  transform: scale(1.05);
+}
+/* Style zone drap and drop*/
+.fa-paperclip {
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--telegram-blue);
+  position: absolute;
+  bottom: 27px;
+  right: 100px;
+}
+input[type="file"] {
+  display: none;
+}
+.file {
+  display: flex;
+  flex-direction: column;
+  list-style-type: none;
+  background-color: var(--telegram-light-bg);
+  padding: 10px 5px;
+  border-radius: 5px;
+  box-shadow: 0 2px 8px var(--telegram-shadow);
+  margin: 10px;
+  text-align: start;
+  transition: all 0.3s ease-in-out;
+  gap: 10px;
+  align-self: flex-start;
+}
+.recu {
+  align-self: flex-end;
+}
+.file span {
+  align-self: flex-start;
+}
+.file a {
+  text-decoration: none;
+  color: #006699;
+  font-weight: 500;
+  padding: 0 5px;
+}
+.file::marker {
+  content: "📎";
+  color: #006699;
+  font-size: 1.5rem;
+}
+.file:hover {
+  background-color: #f0f4f8;
+  transform: translateY(-2px);
+}
+
+/* Avatars dans le chat */
+.modal {
+  display: none;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  background-color: transparent;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  z-index: 999;
+  cursor: pointer;
+}
+.modal_content {
+  width: 50%;
+  height: 50%;
+  background-color: black;
+  color: var(--telegram-blue);
+  border-radius: 50px;
+  box-shadow: 0 4px 12px var(--telegram-shadow);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("/images/doight.webp");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  color: var(--telegram-light-grey);
+  font-size: 2rem;
+  text-align: center;
+  font-weight: bold;
+}
+.fa-phone {
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--telegram-blue);
+  padding: 50px;
+}
+.fa-camera-retro {
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--telegram-blue);
+  padding: 50px;
+}
+/* Media Queries pour Responsivité */
+@media (max-width: 1024px) {
+  .chat_container {
+    grid-template-columns: 250px 1fr;
+  }
+  .show {
+    left: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .chat_container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    gap: 0;
+  }
+  .show {
+    left: 192px;
+  }
+  .header-chat {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-chat img {
+    margin-bottom: 10px;
+  }
+  .droite {
+    position: absolute;
+    margin: 0;
+    padding: 0 20px;
+    height: 100vh;
+    width: 200px;
+    left: -220px;
+    background-color: #1c1c1c;
+    transition: all 0.5s ease-in-out;
+
+    z-index: 99;
+  }
+  .droite::after {
+    display: block;
+  }
+  .droite_visible {
+    left: 0;
+  }
+  .droite_visible::after {
+    right: 0;
+    transform: rotate(90deg);
+  }
+  .user {
+    border-color: #999999;
+  }
+
+  .gauche {
+    padding: 5px 5px;
+    border-top: 1px solid var(--telegram-grey);
+    box-shadow: 0 4px 12px var(--telegram-shadow);
+  }
+}
+
+@media (max-width: 350px) {
+  /* Ajuster les colonnes dans le conteneur de chat */
+
+  .chat_container {
+    grid-template-columns: 1fr; /* Une seule colonne */
+    grid-template-rows: 1fr; /* Diminuer la hauteur de l'entête */
+    gap: 0;
+  }
+
+  /* Réduire la taille des images dans l'entête du chat */
+  .header-chat img {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Ajuster le padding pour le formulaire de message */
+  #chat-form {
+    padding: 10px;
+  }
+
+  /* Réduire la taille du champ de saisie de message */
+  #message-input {
+    padding: 8px 1vw;
+    margin: 5px 1vw;
+    min-width: 5px;
+  }
+
+  /* Ajuster la taille des boutons */
+
+  /* Ajuster le style des utilisateurs connectés pour qu'ils soient bien visibles sur petits écrans */
+
+  /* Ajuster le tableau pour qu'il s'adapte */
+
+  /* Empêcher le dépassement horizontal */
+  body,
+  .container {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Réduire la taille de la liste des utilisateurs connectés pour éviter de prendre trop de place */
+
+  /* Réduire la taille du texte dans les différents éléments */
+}

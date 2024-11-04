@@ -12,7 +12,7 @@ exports.showAdminPage = async (req, res) => {
 
   try {
     const Allusers = await User.getAllUser();
-    res.render("admin", { Allusers: Allusers });
+    res.render("admin", { Allusers: Allusers, cssFile: "/css/admin.css" });
   } catch (error) {
     console.error(error);
     req.flash("error", "Erreur lors du chargement des utilisateurs.");
@@ -49,7 +49,12 @@ exports.deleteUser = async (req, res) => {
   }
 
   try {
-    const userId = req.params.id;
+    const userId = parseInt(req.params.id, 10);
+    if (isNaN(userId)) {
+      req.flash("error", "Invalid user ID");
+      return res.redirect("/admin");
+    }
+
     await User.deleteUser(userId);
     req.flash("success", "Utilisateur supprimé avec succès.");
     res.redirect("/admin");
