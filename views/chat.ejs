@@ -21,7 +21,6 @@
       <div class="droite" id="droite">
         <div class="user">
           <div class="titre">
-            <i class="fa-regular fa-bell"><span class="notif"></span></i>
             <h1>
               <img src="/images/avatar.jpeg" alt=" <%= username %>" />
               <%= username %>
@@ -50,6 +49,9 @@
       </div>
       <div class="gauche" id="zone_de_chat">
         <div id="messages"></div>
+        <div id="private-messages">
+          <h2 class="title_message_privée">Mode message Privée Activée</h2>
+        </div>
         <form action="" id="chat-form">
           <input
             type="text"
@@ -62,6 +64,14 @@
         <form id="file-form">
           <input type="file" id="file-input" />
           <i class="fa-solid fa-paperclip" id="upload-icon"></i>
+        </form>
+        <form id="private-chat-form">
+          <input
+            type="text"
+            id="private-message-input"
+            placeholder="Tapez votre message privé ici"
+          />
+          <button type="submit">&#9654;</button>
         </form>
       </div>
     </div>

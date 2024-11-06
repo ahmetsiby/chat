@@ -7,10 +7,7 @@ const webpush = require("web-push");
 const bodyParser = require("body-parser");
 const path = require("path");
 
-const UserModel = require("./models/userModel"); // Votre modèle utilisateur
-const authController = require("./controllers/authController");
-const chatController = require("./controllers/chatController");
-const adminController = require("./controllers/adminController");
+const { User: UserModel } = require("./models"); // Votre modèle utilisateur
 
 const app = express();
 const http = require("http").createServer(app);
@@ -45,43 +42,31 @@ app.use((req, res, next) => {
 // Définir EJS comme moteur de template
 app.set("view engine", "ejs");
 
-// Routes d'authentification
-app.get("/", authController.showLoginPage);
-app.post("/login", authController.login);
-app.get("/register", authController.showRegisterPage);
-app.post("/register", authController.register);
-app.post("/logout", authController.logout);
-
-// Route pour mot de passe oublié
-app.get("/remove", authController.showRemovePage);
-
-// Route du chat
-app.get("/chat", chatController.showChatPage);
-
-// Routes admin
-app.get("/admin", adminController.showAdminPage);
-app.post("/admin/approve/:id", adminController.approveUser);
-app.post("/admin/delete/:id", adminController.deleteUser);
-app.post("/admin/remove/:id", adminController.removeUser);
+// Routes
+const { authRouter, chatRouter, adminRouter } = require("./routes");
+app.use("/", authRouter);
+app.use("/chat", chatRouter);
+app.use("/admin", adminRouter);
 
 // Gestion des utilisateurs connectés
-const connectedUsers = {};
-let subscriptions = []; //tableau pour stocker les abonnements
+const connectedUsers = new Map();
+let subscriptions = []; // Tableau pour stocker les abonnements
+
 // WebSocket (Socket.io)
 io.on("connection", async (socket) => {
   // Utilisateur rejoint le chat
   socket.on("user connected", async (username, isActive) => {
-    //vérifier si l'utilisateur est deja connecter
-    const existingUser = Object.values(connectedUsers).find(
+    // Vérifier si l'utilisateur est déjà connecté
+    const existingUser = Array.from(connectedUsers.values()).find(
       (user) => user.username === username
     );
     if (existingUser) {
-      //Envoyer un message d'erreur à l'utilisateur
-      socket.emit("error", "Vous êtes déjà connecté");
+      // Envoyer un message d'erreur à l'utilisateur
+      socket.emit("error", "Vous êtes déjà connecté.");
       socket.disconnect();
     } else {
-      //Enregistrer la nouvelle connexion
-      connectedUsers[socket.id] = { username, isActive };
+      // Enregistrer la nouvelle connexion
+      connectedUsers.set(socket.id, { username, isActive, socket });
       const userList = await getSeparateUsers();
       io.emit("userList", userList);
     }
@@ -89,8 +74,9 @@ io.on("connection", async (socket) => {
 
   // Mise à jour de l'état d'activité
   socket.on("user activity", (isActive) => {
-    if (connectedUsers[socket.id]) {
-      connectedUsers[socket.id].isActive = isActive;
+    const user = connectedUsers.get(socket.id);
+    if (user) {
+      user.isActive = isActive;
     }
   });
 
@@ -107,11 +93,41 @@ io.on("connection", async (socket) => {
     envoyerNotificationAuxInactifs("Nouveau message", msg);
   });
 
+  // Gérer les messages privés
+  socket.on("private message", async ({ content, to }) => {
+    const targetUser = Array.from(connectedUsers.values()).find(
+      (user) => user.username === to
+    );
+    if (targetUser && targetUser.socket) {
+      io.to(targetUser.socket.id).emit("private message", {
+        content,
+        from: connectedUsers.get(socket.id).username,
+      });
+      await envoyerNotificationAuxDestinataires(
+        "Nouveau message privé",
+        content,
+        to
+      );
+    } else {
+      socket.emit("error", `L'utilisateur ${to} n'est pas connecté`);
+    }
+  });
+
   // Gérer la déconnexion
   socket.on("disconnect", async () => {
-    if (connectedUsers[socket.id]) delete connectedUsers[socket.id];
-    const userList = await getSeparateUsers();
-    io.emit("userList", userList);
+    // Trouver le nom d'utilisateur associé à ce socket
+    let disconnectedUsername = null;
+    for (let [socketId, user] of connectedUsers.entries()) {
+      if (socketId === socket.id) {
+        disconnectedUsername = user.username;
+        break;
+      }
+    }
+    if (disconnectedUsername) {
+      connectedUsers.delete(socket.id);
+      const userList = await getSeparateUsers();
+      io.emit("userList", userList);
+    }
   });
 });
 
@@ -119,7 +135,7 @@ io.on("connection", async (socket) => {
 async function getSeparateUsers() {
   const allUsers = await UserModel.getAllUser({}, "username -_id");
   const allUsernames = allUsers.map((user) => user.username);
-  const connectedUsernames = Object.values(connectedUsers).map(
+  const connectedUsernames = Array.from(connectedUsers.values()).map(
     (user) => user.username
   );
   const nonConnectedUsers = allUsernames.filter(
@@ -130,7 +146,7 @@ async function getSeparateUsers() {
 
 // Fonction pour filtrer les utilisateurs inactifs
 function getInactiveUsers() {
-  return Object.values(connectedUsers).filter((user) => !user.isActive);
+  return Array.from(connectedUsers.values()).filter((user) => !user.isActive);
 }
 
 // Fonction d'envoi des notifications push
@@ -158,6 +174,14 @@ async function envoyerNotificationAuxInactifs(titre, message) {
   }
 }
 
+// Envoyer notification pour les messages privés
+async function envoyerNotificationAuxDestinataires(titre, message, toUsername) {
+  const targetUser = connectedUsers.get(toUsername);
+  if (targetUser && targetUser.subscription) {
+    await envoyerNotificationPush(titre, message, targetUser.subscription);
+  }
+}
+
 // Route pour les abonnements aux notifications push
 app.post("/subscribe", (req, res) => {
   const { subscription, username } = req.body;
@@ -165,11 +189,12 @@ app.post("/subscribe", (req, res) => {
     return res.status(400).json({ error: "Abonnement invalide" });
   }
 
-  const user = Object.values(connectedUsers).find(
+  const user = Array.from(connectedUsers.values()).find(
     (user) => user.username === username
   );
   if (user) {
     user.subscription = subscription;
+    subscriptions.push(subscription);
     console.log(`Abonnement ajouté pour l'utilisateur ${username}`);
   } else {
     console.log(

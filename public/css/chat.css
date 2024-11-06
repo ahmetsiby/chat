@@ -213,6 +213,13 @@ h1 > img {
 .non-connected-users > ul li:hover {
   background-color: var(--telegram-light-grey);
 }
+/*Gestion du counter*/
+.count {
+  justify-content: center;
+  color: red;
+  align-self: center;
+  margin-left: 50px;
+}
 
 /*gauche*/
 .gauche {
@@ -253,7 +260,8 @@ h1 > img {
   color: var(--telegram-light-grey);
 }
 
-#messages {
+#messages,
+#private-messages {
   flex: 1;
   padding: 20px;
   background-color: #0e0e0d;
@@ -267,7 +275,9 @@ h1 > img {
   align-content: center;
 }
 
-.message {
+.message,
+.private-message,
+.message-private {
   max-width: 100%;
   max-width: 600px;
   padding: 5px 15px;
@@ -278,7 +288,12 @@ h1 > img {
   background-color: #ffffff;
   align-self: flex-end;
 }
-
+.private-message,
+.message-private {
+  background-color: #f0f4f8;
+  padding: 10px;
+  margin: 10px;
+}
 span {
   position: relative;
   color: var(--telegram-blue);
@@ -289,7 +304,11 @@ span {
   align-items: center;
   gap: 5px;
 }
-
+.message-private {
+  align-self: flex-start;
+  border: 1px solid var(--telegram-grey);
+  background-color: rgba(173, 240, 182, 0.836);
+}
 .present {
   color: #cc0000;
   padding: 2px 5px;
@@ -310,7 +329,8 @@ span {
   box-shadow: 0 2px 8px var(--telegram-shadow);
 }
 
-#chat-form {
+#chat-form,
+#private-chat-form {
   display: flex;
   flex-direction: row;
   padding: 15px 20px;
@@ -319,7 +339,8 @@ span {
 .highlight {
   background-color: #f0f4f8;
 }
-#message-input {
+#message-input,
+#private-message-input {
   flex: 1;
   padding: 10px 15px;
   border: 1px solid var(--telegram-grey);
@@ -329,13 +350,15 @@ span {
   transition: border 0.3s, box-shadow 0.3s;
 }
 
-#message-input:focus {
+#message-input:focus,
+#private-message-input:focus {
   border-color: var(--telegram-blue);
   outline: none;
   box-shadow: 0 0 5px var(--telegram-blue);
 }
 
-#chat-form > button {
+#chat-form > button,
+#private-chat-form > button {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -348,10 +371,38 @@ span {
   padding-bottom: 15px;
 }
 
-#chat-form > button:hover {
+#chat-form > button:hover,
+#private-chat-form > button:hover {
   background-color: #006699;
   transform: scale(1.05);
 }
+/*Chat privée*/
+.user-selected {
+  border: 2px solid red;
+  border-radius: 5px;
+}
+
+.title_message_privée {
+  font-size: 2.5rem; /* Taille de police de base */
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+  background: linear-gradient(45deg, #ff7e5f, #feb47b);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  margin: 20px;
+  padding: 10px 20px;
+  line-height: 1.2;
+  transition: transform 0.3s ease, letter-spacing 0.3s ease;
+}
+
+/* Effets de survol */
+.title_message_privée:hover {
+  transform: scale(1.05);
+  letter-spacing: 2px;
+}
+
 /* Style zone drap and drop*/
 .fa-paperclip {
   font-size: 20px;
@@ -453,6 +504,10 @@ input[type="file"] {
     right: 0;
     transform: rotate(90deg);
   }
+  .title_message_privée {
+    font-size: 1.5rem;
+    padding: 8px 15px;
+  }
 }
 @media (max-width: 360px) {
   .show {
@@ -465,4 +520,8 @@ input[type="file"] {
   .btn_user {
     top: 100px;
   }
+}
+
+.message_priver {
+  display: flex;
 }

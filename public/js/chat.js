@@ -1,11 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const buttons = document.querySelectorAll("button");
-  buttons.forEach((button) => {
-    button.addEventListener("click", (e) => {
-      e.stopPropagation();
-    });
-  });
   const socket = io();
+
   let isActive = document.visibilityState === "visible";
   let unreadMessages = 0;
 
@@ -13,11 +8,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("visibilitychange", () => {
     isActive = document.visibilityState === "visible";
-    socket.emit("user activity", isActive);
-
+    socket.emit("user activity", isActive); // Met à jour côté serveur
+    if (navigator.serviceWorker.controller) {
+      // Envoyer l'état d'activité au Service Worker
+      navigator.serviceWorker.controller.postMessage({
+        type: "update-activity",
+        isActive: isActive,
+      });
+    }
     if (isActive) {
       unreadMessages = 0;
-      afficherMessageNonLu();
+      // afficherMessageNonLu();
     }
   });
 
@@ -31,9 +32,11 @@ document.addEventListener("DOMContentLoaded", () => {
       input.value = "";
     }
   });
+
   document.getElementById("upload-icon").addEventListener("click", () => {
     document.getElementById("file-input").click();
   });
+
   document.getElementById("file-input").addEventListener("change", (e) => {
     const files = e.target.files;
     if (files.length === 0) {
@@ -74,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!isActive) {
       unreadMessages++;
-      afficherMessageNonLu();
+      // afficherMessageNonLu();
     }
   });
 
@@ -183,18 +186,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const base64 = (base64String + padding)
       .replace(/-/g, "+")
       .replace(/_/g, "/");
-    const rawData = atob(base64);
+    const rawData = window.atob(base64);
     const outputArray = new Uint8Array(rawData.length);
     for (let i = 0; i < rawData.length; i++) {
       outputArray[i] = rawData.charCodeAt(i);
     }
     return outputArray;
-  }
-
-  function afficherMessageNonLu() {
-    const notif = document.querySelector(".notif");
-    notif.style.display = unreadMessages > 0 ? "block" : "none";
-    notif.textContent = unreadMessages;
   }
 
   function createAvatar(src) {
@@ -224,8 +221,138 @@ document.addEventListener("DOMContentLoaded", () => {
     messages.scrollTop = messages.scrollHeight;
   }
 
+  const privateChatForm = document.getElementById("private-chat-form");
+  const chatForm = document.getElementById("chat-form");
+  const Messsages = document.getElementById("messages");
+  const connectedUserList = document.getElementById("connected-user-list");
+  privateChatForm.style.display = "none"; // Masquer le formulaire de chat privé par défaut
+  let currentPrivateChatUser = null; // Variable pour stocker l'utilisateur cible du chat privé
+
+  // Fonction pour ouvrir/fermer un chat privé (toggle)
+  function togglePrivateChat(targetUsername) {
+    const userElements = connectedUserList.querySelectorAll("li");
+
+    if (currentPrivateChatUser === targetUsername) {
+      // Si le chat privé est déjà ouvert pour cet utilisateur, le fermer
+      closePrivateChat();
+      userElements.forEach((el) => {
+        el.classList.remove("user-selected");
+        //el.querySelector(".count").textContent = "";
+      });
+    } else {
+      // Sinon, ouvrir le chat privé pour cet utilisateur
+      openPrivateChat(targetUsername);
+      //ajouter la bordure à l'utilisateur sélectionné
+      userElements.forEach((el) => {
+        if (el.textContent === targetUsername) {
+          el.classList.add("user-selected");
+        } else {
+          el.classList.remove("user-selected");
+        }
+      });
+    }
+  }
+  // Fonction pour ouvrir un chat privé
+  function openPrivateChat(targetUsername) {
+    currentPrivateChatUser = targetUsername; // Définir le destinataire du message privé
+    privateChatForm.style.display = "flex";
+    privateMessages.style.display = "flex";
+    chatForm.style.display = "none";
+    Messsages.style.display = "none";
+    document.getElementById("private-message-input").focus();
+  }
+  // Fonction pour fermer le chat privé et revenir au chat général
+  function closePrivateChat() {
+    currentPrivateChatUser = null; // Réinitialiser le destinataire du chat privé
+    privateChatForm.style.display = "none";
+    privateMessages.style.display = "none";
+    chatForm.style.display = "flex";
+    Messsages.style.display = "flex";
+  }
+
+  // Écouteur d'événement pour l'envoi de messages privés (ajouté une seule fois)
+  privateChatForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const input = document.getElementById("private-message-input");
+    const message = input.value.trim();
+
+    if (message && currentPrivateChatUser) {
+      socket.emit("private message", {
+        content: message,
+        to: currentPrivateChatUser,
+      });
+      input.value = ""; // Réinitialiser le champ de saisie
+      displayPrivateMessageEnvoyer(username, message); // Afficher le message privé dans l'interface
+    }
+  });
+
+  // Conteneur pour afficher les messages privés
+  // Conteneur pour afficher les messages privés
+  const privateMessages = document.getElementById("private-messages");
+  privateMessages.style.display = "none"; // Masquer les messages privés par défaut
+
+  // Fonction pour afficher le message privé envoyé (vous avez envoyé un message à quelqu'un)
+  function displayPrivateMessageEnvoyer(to, message) {
+    const messageElement = document.createElement("div");
+    messageElement.classList.add("message-private");
+    messageElement.textContent = `${to}: ${message}`; // Affiche "Vous" pour indiquer que c'est envoyé par vous
+    privateMessages.appendChild(messageElement);
+  }
+  const titlePrivate = document.querySelector(".title_message_privée");
+  const messageCounts = {};
+  // Fonction pour afficher un message privé reçu (quelqu'un vous a envoyé un message)
+  function displayPrivateMessage(from, message) {
+    const messageElement = document.createElement("div");
+    messageElement.classList.add("private-message");
+
+    // Met à jour le titre de la conversation privée
+    if (!titlePrivate.textContent.includes(`${from}`)) {
+      titlePrivate.textContent = `Message privé de ${from}`;
+      console.log("Réévaluer");
+    }
+
+    // Affiche le message reçu
+    messageElement.textContent = `${from}: ${message}`;
+    privateMessages.appendChild(messageElement);
+
+    // Gestion du compteur de messages non lus pour l'utilisateur `from`
+    if (!messageCounts[from]) {
+      messageCounts[from] = 0;
+    }
+    messageCounts[from]++; // Incrémente le compteur pour cet utilisateur
+
+    // Sélectionne l'utilisateur qui a envoyé le message et met à jour le compteur
+    const userElements = connectedUserList.querySelectorAll("li");
+    userElements.forEach((el) => {
+      if (el.textContent.includes(from)) {
+        // Ajoute un élément `span` pour le compteur s'il n'existe pas déjà
+        let countSpan = el.querySelector(".count");
+        if (!countSpan) {
+          countSpan = document.createElement("span");
+          countSpan.classList.add("count");
+          el.appendChild(countSpan);
+        }
+
+        // Met à jour le compteur avec le nombre de messages non lus
+        countSpan.textContent = messageCounts[from];
+
+        // Si le chat est ouvert, réinitialise le compteur pour cet utilisateur
+        if (el.classList.contains("user-selected")) {
+          messageCounts[from] = 0;
+          countSpan.textContent = ""; // Masque le compteur
+        }
+      } else {
+        // Supprime le compteur pour les autres utilisateurs
+        const otherCount = el.querySelector(".count");
+        if (otherCount) {
+          otherCount.textContent = "";
+        }
+      }
+    });
+  }
+
+  // Met à jour la liste des utilisateurs connectés et ajoute le toggle sur chaque utilisateur
   function updateUserLists(userList) {
-    const connectedUserList = document.getElementById("connected-user-list");
     const nonConnectedUserList = document.getElementById(
       "non-connected-user-list"
     );
@@ -236,6 +363,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const li = document.createElement("li");
         li.textContent = user;
         li.prepend(createAvatar("/images/avatar.jpeg"));
+        //craetion de notre compteurs
+        // Ajoute un écouteur de clic avec le toggle
+        li.addEventListener("click", () => {
+          if (li.querySelector(".count")) {
+            const count = li.querySelector(".count");
+            count.innerText = "";
+            console.log("click sur uesr");
+          }
+          togglePrivateChat(user);
+          messageCounts[user] = 0;
+        });
+
         connectedUserList.appendChild(li);
       }
     });
@@ -248,10 +387,18 @@ document.addEventListener("DOMContentLoaded", () => {
       nonConnectedUserList.appendChild(li);
     });
   }
-  //Gestion des erreurs
+
+  // Écouter les messages privés
+  socket.on("private message", ({ content, from }) => {
+    console.log("Message privé reçu:", content, from);
+
+    displayPrivateMessage(from, content);
+  });
+
+  // Exemple d'utilisation pour ouvrir un chat privé avec un utilisateur
+
+  // Gestion des erreurs
   socket.on("error", (message) => {
-    alert(`Erreur de connexion : ${message}. Vous allez être déconnecté.`);
-    //socket.disconnect();
-    window.location.href = "/login";
+    alert(message);
   });
 });

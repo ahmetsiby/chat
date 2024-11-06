@@ -1,7 +1,6 @@
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator");
-const User = require("../models/userModel");
-const Session = require("../models/sessionModel");
+const { Session, User } = require("../models");
 
 // Afficher la page de connexion
 exports.showLoginPage = (req, res) => {

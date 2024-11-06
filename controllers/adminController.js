@@ -1,6 +1,6 @@
 // controllers/adminController.js
 
-const User = require("../models/userModel");
+const { User } = require("../models");
 
 // Afficher la page admin avec les utilisateurs en attente
 exports.showAdminPage = async (req, res) => {

@@ -1,4 +1,4 @@
-const Session = require("../models/sessionModel");
+const { Session } = require("../models");
 
 // Afficher la page de chat
 exports.showChatPage = (req, res) => {

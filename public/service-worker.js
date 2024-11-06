@@ -87,8 +87,13 @@ function clearBadge() {
 }
 
 // Réinitialiser le compteur de notifications
+let isActive = false;
 self.addEventListener("message", (event) => {
-  if (event.data === "reset-notifications") {
+  if (event.data.type === "update-activity") {
+    // Mettre à jour l'état d'activité
+    isActive = event.data.isActive;
+  } else if (event.data === "reset-notifications") {
+    // Réinitialiser les notifications non lues et effacer le badge
     notificationCount = 0;
     clearBadge();
   }
@@ -102,23 +107,17 @@ self.addEventListener("notificationclick", (event) => {
     clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
-        // Vérifier si une fenêtre de chat est déjà ouverte
         for (const client of clientList) {
-          if (
-            client.url.startsWith("https://localhost:4000/chat") &&
-            "focus" in client
-          ) {
-            // Si la fenêtre existe déjà, vérifier si elle est visible
-            if (client.visibilityState === "visible") {
-              return client.focus();
-            } else {
-              // Si elle n'est pas visible, alors la focaliser
+          if (client.url.includes("localhost:4000/chat") && "focus" in client) {
+            // Si une fenêtre de chat est déjà ouverte mais inactive, la focaliser
+            if (!isActive) {
               return client.focus();
             }
+            // Si la fenêtre est active, ne rien faire
+            return;
           }
         }
-
-        // Si aucune fenêtre n'est trouvée, ouvrir une nouvelle fenêtre
+        // Si aucune fenêtre de chat n'est ouverte, en ouvrir une nouvelle
         return clients.openWindow("http://localhost:4000/chat");
       })
   );
