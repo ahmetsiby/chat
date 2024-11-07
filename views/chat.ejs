@@ -7,11 +7,17 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism.min.css"
+    />
     <title>Chat</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="<%= cssFile  %>" />
   </head>
   <body>
+    <!-- Conteneur de la notification toast -->
+    <div id="toast"></div>
     <div class="modal" id="modal">
       <div class="modal_content">
         <p>Vous n'avez pas le droit au click droit</p>
@@ -19,6 +25,7 @@
     </div>
     <div class="chat_container">
       <div class="droite" id="droite">
+        <span class="after"></span>
         <div class="user">
           <div class="titre">
             <h1>
@@ -40,18 +47,19 @@
             </button>
           </form>
         </div>
-        <div class="connected-users">
-          <ul id="connected-user-list"></ul>
-        </div>
-        <div class="non-connected-users">
-          <ul id="non-connected-user-list"></ul>
+        <div class="usersList">
+          <h2>Utilisateurs</h2>
+          <div class="connected-users">
+            <ul id="connected-user-list"></ul>
+          </div>
+          <div class="non-connected-users">
+            <ul id="non-connected-user-list"></ul>
+          </div>
         </div>
       </div>
       <div class="gauche" id="zone_de_chat">
         <div id="messages"></div>
-        <div id="private-messages">
-          <h2 class="title_message_privée">Mode message Privée Activée</h2>
-        </div>
+        <div id="private-messages"></div>
         <form action="" id="chat-form">
           <input
             type="text"
@@ -80,6 +88,7 @@
       const username = "<%= username %>";
       const PUBLIC_VAPID_KEY = "<%= PUBLIC_VAPID_KEY %>";
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
     <script src="/js/chat.js"></script>
   </body>
 </html>

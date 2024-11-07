@@ -88,9 +88,19 @@ io.on("connection", async (socket) => {
   });
 
   // Réception d'un message de chat
+  // Réception d'un message de chat
   socket.on("chat message", async (msg) => {
-    io.emit("chat message", msg);
-    envoyerNotificationAuxInactifs("Nouveau message", msg);
+    const user = connectedUsers.get(socket.id);
+    if (user) {
+      const formattedMessage = {
+        username: user.username,
+        content: msg.content,
+      };
+      io.emit("chat message", formattedMessage);
+      envoyerNotificationAuxInactifs("Nouveau message", msg.content); // Assurez-vous que 'msg' est une chaîne
+    } else {
+      socket.emit("error", "Utilisateur non trouvé.");
+    }
   });
 
   // Gérer les messages privés
@@ -176,9 +186,17 @@ async function envoyerNotificationAuxInactifs(titre, message) {
 
 // Envoyer notification pour les messages privés
 async function envoyerNotificationAuxDestinataires(titre, message, toUsername) {
-  const targetUser = connectedUsers.get(toUsername);
-  if (targetUser && targetUser.subscription) {
-    await envoyerNotificationPush(titre, message, targetUser.subscription);
+  const inactiveUsers = getInactiveUsers();
+  const inactifsUserPriver = inactiveUsers.find(
+    (user) => user.username === toUsername
+  );
+
+  if (inactifsUserPriver && inactifsUserPriver.subscription) {
+    await envoyerNotificationPush(
+      titre,
+      message,
+      inactifsUserPriver.subscription
+    );
   }
 }
 

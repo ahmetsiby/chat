@@ -25,10 +25,12 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("chat-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const input = document.getElementById("message-input");
-    const message = `${username.toUpperCase()}: ${input.value.trim()}`;
-
-    if (input.value.trim()) {
-      socket.emit("chat message", message);
+    const message = input.value.trim();
+    if (message) {
+      socket.emit("chat message", {
+        username: username.toUpperCase(),
+        content: message,
+      });
       input.value = "";
     }
   });
@@ -46,6 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     [...files].forEach((file) => {
       if (file.size > 10 * 1024 * 1024) {
+        // 10MB
         alert("Fichier trop volumineux");
         return;
       }
@@ -71,8 +74,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const avatar = createAvatar("/images/avatar.jpeg");
 
   socket.on("chat message", (msg) => {
-    const [userName, ...messageParts] = msg.split(":");
-    const message = messageParts.join(":").trim();
+    console.log("Réception de chat message :", msg);
+    if (typeof msg !== "object" || !msg.username || !msg.content) {
+      console.error("Format de message incorrect :", msg);
+      return;
+    }
+    const userName = msg.username;
+    const message = msg.content;
     displayMessage(userName, message);
 
     if (!isActive) {
@@ -121,11 +129,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === modal) modal.style.display = "none";
   });
 
-  document.getElementById("droite").addEventListener("click", (e) => {
+  document.querySelector(".after").addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (window.innerWidth < 768) {
-      e.preventDefault();
-      e.stopPropagation();
-      document.getElementById("droite").classList.toggle("collapsed");
+      document.querySelector(".after").classList.toggle("collapsed");
+      document.getElementById("droite").classList.toggle("droite_visible");
     }
   });
 
@@ -204,47 +213,35 @@ document.addEventListener("DOMContentLoaded", () => {
     return avatar;
   }
 
-  function displayMessage(userName, message) {
-    const messages = document.getElementById("messages");
-    const messageElement = document.createElement("div");
-    messageElement.textContent = message;
-    messageElement.classList.add("message");
-
-    const userSpan = document.createElement("span");
-    userSpan.textContent = userName[0].toUpperCase();
-    userSpan.appendChild(createAvatar("/images/avatar.jpeg"));
-    if (userName.toUpperCase() === username.toUpperCase()) {
-      userSpan.classList.add("present");
-    }
-
-    messages.append(userSpan, messageElement);
-    messages.scrollTop = messages.scrollHeight;
-  }
-
   const privateChatForm = document.getElementById("private-chat-form");
   const chatForm = document.getElementById("chat-form");
   const Messsages = document.getElementById("messages");
   const connectedUserList = document.getElementById("connected-user-list");
   privateChatForm.style.display = "none"; // Masquer le formulaire de chat privé par défaut
   let currentPrivateChatUser = null; // Variable pour stocker l'utilisateur cible du chat privé
+  const allPrivateMessages = new Map(); // Tableau pour stocker les messages privés
 
   // Fonction pour ouvrir/fermer un chat privé (toggle)
   function togglePrivateChat(targetUsername) {
     const userElements = connectedUserList.querySelectorAll("li");
 
-    if (currentPrivateChatUser === targetUsername) {
+    if (
+      currentPrivateChatUser &&
+      currentPrivateChatUser.toLowerCase() === targetUsername.toLowerCase()
+    ) {
       // Si le chat privé est déjà ouvert pour cet utilisateur, le fermer
       closePrivateChat();
       userElements.forEach((el) => {
         el.classList.remove("user-selected");
-        //el.querySelector(".count").textContent = "";
       });
     } else {
       // Sinon, ouvrir le chat privé pour cet utilisateur
       openPrivateChat(targetUsername);
-      //ajouter la bordure à l'utilisateur sélectionné
+      // Ajouter la bordure à l'utilisateur sélectionné
       userElements.forEach((el) => {
-        if (el.textContent === targetUsername) {
+        if (
+          el.textContent.trim().toLowerCase() === targetUsername.toLowerCase()
+        ) {
           el.classList.add("user-selected");
         } else {
           el.classList.remove("user-selected");
@@ -252,6 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   }
+
   // Fonction pour ouvrir un chat privé
   function openPrivateChat(targetUsername) {
     currentPrivateChatUser = targetUsername; // Définir le destinataire du message privé
@@ -260,7 +258,13 @@ document.addEventListener("DOMContentLoaded", () => {
     chatForm.style.display = "none";
     Messsages.style.display = "none";
     document.getElementById("private-message-input").focus();
+    // Charger la conversation
+    loadConversation(targetUsername);
+    // Mettre à jour le titre de la conversation privée
+
+    //titlePrivate.textContent = `Conversation avec ${targetUsername}`;
   }
+
   // Fonction pour fermer le chat privé et revenir au chat général
   function closePrivateChat() {
     currentPrivateChatUser = null; // Réinitialiser le destinataire du chat privé
@@ -270,7 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
     Messsages.style.display = "flex";
   }
 
-  // Écouteur d'événement pour l'envoi de messages privés (ajouté une seule fois)
+  // Écouteur d'événement pour l'envoi de messages privés
   privateChatForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const input = document.getElementById("private-message-input");
@@ -282,11 +286,10 @@ document.addEventListener("DOMContentLoaded", () => {
         to: currentPrivateChatUser,
       });
       input.value = ""; // Réinitialiser le champ de saisie
-      displayPrivateMessageEnvoyer(username, message); // Afficher le message privé dans l'interface
+      displayPrivateMessageEnvoyer(currentPrivateChatUser, message); // Afficher le message privé dans l'interface
     }
   });
 
-  // Conteneur pour afficher les messages privés
   // Conteneur pour afficher les messages privés
   const privateMessages = document.getElementById("private-messages");
   privateMessages.style.display = "none"; // Masquer les messages privés par défaut
@@ -295,37 +298,73 @@ document.addEventListener("DOMContentLoaded", () => {
   function displayPrivateMessageEnvoyer(to, message) {
     const messageElement = document.createElement("div");
     messageElement.classList.add("message-private");
-    messageElement.textContent = `${to}: ${message}`; // Affiche "Vous" pour indiquer que c'est envoyé par vous
+    messageElement.innerHTML = `Vous: ${formatMessageContent(message)}`; // Utiliser le formatage du message
     privateMessages.appendChild(messageElement);
+    privateMessages.scrollTop = privateMessages.scrollHeight;
+
+    // Stocker le message dans allPrivateMessages
+    storePrivateMessage(username, to, message);
+
+    // Applique la coloration syntaxique
+    const codeElement = messageElement.querySelector("pre code, code");
+    if (codeElement) {
+      if (typeof Prism !== "undefined") Prism.highlightElement(codeElement);
+      if (typeof hljs !== "undefined") hljs.highlightElement(codeElement);
+    }
   }
-  const titlePrivate = document.querySelector(".title_message_privée");
+
+  //const titlePrivate = document.querySelector(".title_message_privée");
   const messageCounts = {};
+
+  // Fonction pour afficher un message reçu (quelqu'un vous a envoyé un message)
+  function displayMessage(userName, message) {
+    const messages = document.getElementById("messages");
+    const messageContainer = document.createElement("div");
+    messageContainer.classList.add("message");
+    // Utilisez `innerHTML` pour insérer le message formaté
+    messageContainer.innerHTML = `${escapeHtml(
+      userName[0].toUpperCase()
+    )}: ${formatMessageContent(message)}`;
+
+    const userSpan = document.createElement("span");
+    userSpan.innerHTML = `${escapeHtml(userName[0].toUpperCase())}`;
+    userSpan.appendChild(createAvatar("/images/avatar.jpeg"));
+    if (userName.toUpperCase() === username.toUpperCase()) {
+      userSpan.classList.add("present");
+      /**Notification toast */
+    } else {
+      /**Notification toast */
+      showToast(message, userName);
+    }
+
+    messages.append(userSpan, messageContainer);
+    messages.scrollTop = messages.scrollHeight;
+
+    // Applique la coloration syntaxique
+    const codeElements = messageContainer.querySelectorAll("pre code, code");
+    codeElements.forEach((block) => {
+      if (typeof Prism !== "undefined") Prism.highlightElement(block);
+      if (typeof hljs !== "undefined") hljs.highlightElement(block);
+    });
+  }
   // Fonction pour afficher un message privé reçu (quelqu'un vous a envoyé un message)
   function displayPrivateMessage(from, message) {
-    const messageElement = document.createElement("div");
-    messageElement.classList.add("private-message");
+    console.log("Message privé reçu:", message, "de:", from);
 
-    // Met à jour le titre de la conversation privée
-    if (!titlePrivate.textContent.includes(`${from}`)) {
-      titlePrivate.textContent = `Message privé de ${from}`;
-      console.log("Réévaluer");
-    }
-
-    // Affiche le message reçu
-    messageElement.textContent = `${from}: ${message}`;
-    privateMessages.appendChild(messageElement);
+    // Stocker le message dans allPrivateMessages
+    storePrivateMessage(from, username, message);
 
     // Gestion du compteur de messages non lus pour l'utilisateur `from`
-    if (!messageCounts[from]) {
-      messageCounts[from] = 0;
+    const fromLower = from.toLowerCase();
+    if (!messageCounts[fromLower]) {
+      messageCounts[fromLower] = 0;
     }
-    messageCounts[from]++; // Incrémente le compteur pour cet utilisateur
+    messageCounts[fromLower]++; // Incrémente le compteur pour cet utilisateur
 
-    // Sélectionne l'utilisateur qui a envoyé le message et met à jour le compteur
+    // Mise à jour des compteurs dans la liste des utilisateurs
     const userElements = connectedUserList.querySelectorAll("li");
     userElements.forEach((el) => {
       if (el.textContent.includes(from)) {
-        // Ajoute un élément `span` pour le compteur s'il n'existe pas déjà
         let countSpan = el.querySelector(".count");
         if (!countSpan) {
           countSpan = document.createElement("span");
@@ -334,21 +373,90 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Met à jour le compteur avec le nombre de messages non lus
-        countSpan.textContent = messageCounts[from];
+        countSpan.textContent = messageCounts[fromLower];
 
-        // Si le chat est ouvert, réinitialise le compteur pour cet utilisateur
-        if (el.classList.contains("user-selected")) {
-          messageCounts[from] = 0;
+        // Si le chat est ouvert avec cet utilisateur, réinitialise le compteur
+        if (
+          currentPrivateChatUser &&
+          currentPrivateChatUser.toLowerCase() === fromLower
+        ) {
+          messageCounts[fromLower] = 0;
           countSpan.textContent = ""; // Masque le compteur
-        }
-      } else {
-        // Supprime le compteur pour les autres utilisateurs
-        const otherCount = el.querySelector(".count");
-        if (otherCount) {
-          otherCount.textContent = "";
         }
       }
     });
+
+    // Afficher le message uniquement si le chat privé est ouvert avec l'expéditeur
+    if (
+      currentPrivateChatUser &&
+      currentPrivateChatUser.toLowerCase() === fromLower
+    ) {
+      // Met à jour le titre de la conversation privée
+      // if (!titlePrivate.textContent.includes(`${from}`)) {
+      //   titlePrivate.textContent = `Conversation avec ${from}`;
+      // }
+
+      // Créer l'élément du message
+      const messageElement = document.createElement("div");
+      messageElement.classList.add("private-message");
+
+      const userEnvoie = document.createElement("span");
+      userEnvoie.textContent = from;
+      userEnvoie.appendChild(createAvatar("/images/avatar.jpeg"));
+
+      const messageContent = document.createElement("p");
+      messageContent.innerHTML = formatMessageContent(message); // Utiliser le formatage du message
+
+      messageElement.append(userEnvoie, messageContent);
+      privateMessages.appendChild(messageElement);
+      privateMessages.scrollTop = privateMessages.scrollHeight;
+
+      // Applique la coloration syntaxique
+      const codeElement = messageContent.querySelector("pre code, code");
+      if (codeElement) {
+        if (typeof Prism !== "undefined") Prism.highlightElement(codeElement);
+        if (typeof hljs !== "undefined") hljs.highlightElement(codeElement);
+      }
+    }
+  }
+
+  /// Fonction pour afficher les messages d'un utilisateur sélectionné
+  function storePrivateMessage(from, to, message) {
+    const participants = [from, to].sort();
+    const key = participants.join("-");
+    if (!allPrivateMessages.has(key)) {
+      allPrivateMessages.set(key, []);
+    }
+    // Ajouter le message à la liste des messages privés
+    allPrivateMessages.get(key).push({ from, message });
+  }
+
+  // Fonction pour charger la conversation avec un utilisateur sélectionné
+  function loadConversation(selectedUser) {
+    privateMessages.innerHTML = ""; // Efface les messages actuels
+    const participants = [username, selectedUser].sort();
+    const key = participants.join("-");
+
+    if (allPrivateMessages.has(key)) {
+      const conversation = allPrivateMessages.get(key);
+      conversation.forEach(({ from, message }) => {
+        const messageElement = document.createElement("div");
+        messageElement.classList.add("private-message");
+        messageElement.innerHTML = `${
+          from === username ? "Vous" : escapeHtml(from)
+        }: ${formatMessageContent(message)}`;
+        privateMessages.appendChild(messageElement);
+
+        // Applique la coloration syntaxique
+        const codeElement = messageElement.querySelector("pre code, code");
+        if (codeElement) {
+          if (typeof Prism !== "undefined") Prism.highlightElement(codeElement);
+          if (typeof hljs !== "undefined") hljs.highlightElement(codeElement);
+        }
+      });
+
+      privateMessages.scrollTop = privateMessages.scrollHeight;
+    }
   }
 
   // Met à jour la liste des utilisateurs connectés et ajoute le toggle sur chaque utilisateur
@@ -363,16 +471,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const li = document.createElement("li");
         li.textContent = user;
         li.prepend(createAvatar("/images/avatar.jpeg"));
-        //craetion de notre compteurs
+        // Création des compteurs
         // Ajoute un écouteur de clic avec le toggle
         li.addEventListener("click", () => {
           if (li.querySelector(".count")) {
             const count = li.querySelector(".count");
             count.innerText = "";
-            console.log("click sur uesr");
+            console.log("click sur user");
           }
           togglePrivateChat(user);
-          messageCounts[user] = 0;
+          messageCounts[user.toLowerCase()] = 0;
+
+          // Charger la conversation
+          loadConversation(user);
         });
 
         connectedUserList.appendChild(li);
@@ -388,17 +499,70 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Fonction pour détecter et formater le code
+  function formatMessageContent(message) {
+    // Détecte les blocs de code délimités par ```
+    const codeBlockPattern = /```(\w+)?\n([\s\S]+?)\n```/g;
+    message = message.replace(codeBlockPattern, (match, p1, p2) => {
+      const language = p1 ? escapeHtml(p1) : ""; // Langage de programmation (optionnel)
+      const codeContent = escapeHtml(p2); // Échappe les caractères HTML spéciaux
+      return `<pre><code class="language-${language}">${codeContent}</code></pre>`;
+    });
+
+    // Détecte les codes inline avec `
+    const inlineCodePattern = /`([^`]+)`/g;
+    message = message.replace(inlineCodePattern, (match, p1) => {
+      return `<code>${escapeHtml(p1)}</code>`;
+    });
+
+    // Convertit les sauts de ligne en <br> pour une meilleure lisibilité dans le chat
+    message = message.replace(/\n/g, "<br>");
+
+    return message;
+  }
+
+  function escapeHtml(text) {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   // Écouter les messages privés
   socket.on("private message", ({ content, from }) => {
     console.log("Message privé reçu:", content, from);
 
     displayPrivateMessage(from, content);
+    showToast(content, from, true);
   });
-
-  // Exemple d'utilisation pour ouvrir un chat privé avec un utilisateur
 
   // Gestion des erreurs
   socket.on("error", (message) => {
     alert(message);
   });
+
+  /*Gestion toast*/
+  function showToast(message, userName, isPrivate = false) {
+    const messageToast =
+      message.length > 20 ? message.substring(0, 20) + "..." : message;
+    var toast = document.getElementById("toast");
+    toast.innerHTML = `Nouveau message de : ${userName.toUpperCase()} -> ${messageToast}`;
+
+    // Retirer les classes existantes liées au toast
+    toast.classList.remove("showToast", "showToastPrivate");
+
+    // Ajouter la classe appropriée
+    if (isPrivate) {
+      toast.classList.add("showToastPrivate");
+    } else {
+      toast.classList.add("showToast");
+    }
+
+    // Après 3 secondes, retirer les classes pour cacher le toast
+    setTimeout(function () {
+      toast.classList.remove("showToast", "showToastPrivate");
+    }, 3000);
+  }
 });
